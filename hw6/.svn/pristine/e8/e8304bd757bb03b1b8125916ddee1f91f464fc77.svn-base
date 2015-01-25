@@ -1,0 +1,80 @@
+<html>
+<head>
+    <title>HW6: StringSet</title>
+    <link rel="stylesheet" href="styles/lab_61b.css" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" type="text/css" rel="stylesheet" media="screen">
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {inlineMath: [["$","$"],["\\(","\\)"]]}
+  });
+</script>
+<script type="text/javascript"
+   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+
+</script>    
+</head>
+<body>
+    <div id="navbar">
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/"><div class="navitem navclass">CS 61B</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/lectures/"><div class="navitem">Lecture</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/hw/"><div class="navitem">Lab/Homework</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/ta-materials/"><div class="navitem">Discussion</div></a>
+        <a href="https://piazza.com/class/hv91iivr1r15z"><div class="navitem">Piazza</div></a>
+    </div>
+    <h1 id="title">StringSet</h1>
+    <center>Due Saturday, October 25th at 11:59 PM</center>
+    <link rel="stylesheet" href="html/lab_61b.css" type="text/css">
+    <h2 id='table-of-contents'>Table of Contents</h2>
+    <ul>
+    <li><a href="#introduction">Introduction</a>    
+    <li><a href="#BSTStringSet">Part 1: BSTStringSet and Makefile</a>    
+    <li><a href="#speedTesting">Part 2: Speed Testing</a>
+    <li><a href="#stringset">Part 3 (optional): Generic Set</a>
+    <li><a href="#dictionary">Part 4 (optional): Dictionary</a>
+
+    </ul>
+<p><h2 id="introduction">Introduction</h2>
+
+<p>For this assignment, you'll create a BST based implementation of the StringSet interface, which provides an abstraction for sets that contain Strings. To keep things simple, your set will only allow <tt>put</tt> and <tt>contains</tt> operations. You'll then compare the performance of your implementation to a reference implementation based on linked lists as well as the built-in Java BST set.
+
+<p>To implement the interface, you'll be working completely from scratch, with no Makefiles or skeleton code.
+
+
+<p><h2 id="BSTStringSet">BSTStringSet</h2>
+
+<p>Create a class BSTStringSet that implements the StringSet interface using a BST as its core data structure. As references, you might find the following resources useful:
+
+<ul><li>BST code from pages 110 and 111 of DSIJ.
+<li>BST Pseudocode from Josh's BST lecture to be useful (see code21.zip at <a href="http://inst.eecs.berkeley.edu/~cs61b/fa14/lectures/hug.html">this link</a>).
+<li><tt>LinkedListStringSet.java</tt> (provided with hw init), which provides a working linked list based StringSet implementation.
+</ul>
+
+<p>While not required, it is recommended that you create a Makefile. If you're not sure where to start, the Makefile tutorial from <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/hw/code/lab5/#makefile">lab 5</a> might be helpful, as well as the <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/hw/solutions/lab5/">solutions to lab5</a>.
+
+<p>Make sure to write tests to ensure that your class works correctly.
+
+<p>Optionally: Add a method <tt>printInOrder()</tt> that prints out your BSTStringSet in order.
+
+<p><h2 id="speedTesting">Speed Testing</h2>
+
+<p>The <tt>InsertRandomSpeedTest</tt> class performs speed testing on <tt>LinkedListStringSet</tt>, your <tt>BSTStringSet</tt>, and Java's built-in <tt>TreeSet</tt> class. It works by asking the user for an input size N, then generates N strings of length 10 and inserts them into the set.
+
+<p>Try it out and see how your data structure scales with N compared to the naive and industrial strength implementations. Record your results in speedTest.txt. There is no standard format required for your results, and there is no required number of data points. 
+
+<p>Create a new test <tt>InsertInOrderSpeedTest</tt>. Instead of inserting random strings, it should insert strings in increasing lexicographic order. For example, it might insert "cow", "cox", "coy", "coz", "cpa", "cpb", .... You'll want to use the <tt>NextString</tt> method provided in <tt>StringUtils</tt>. I'd recommend starting by just copying and pasting the code from <tt>InsertRandomSpeedTest</tt> and then making changes where necessary.
+
+<p>Again record you results in speedTests.txt. If you observed anthing interesting (hopefully you did), then you should explain this interesting thing.
+
+<p><h2 id="genericSet">Part 3: Generic Set (optional) </h2>
+
+Create an implementation <tt>BSTGenericSet</tt> that implements the <tt>GenericSet</tt> interface.
+
+<p><h2 id="genericSet">Part 4: Dictionary (optional) </h2>
+
+Create an implementation <tt>BSTDictionary</tt> that implements the <tt>Dictionary</tt> interface.
+
+</body></html>
+

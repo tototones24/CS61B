@@ -1,0 +1,45 @@
+public booleon hasLoop(Node start) {
+	Node slow = start;
+	Node fast = start;
+	while (fast.next != null) {
+		if (fast = slow || fast.next == slow) {
+		return true;
+		}
+		slow = slow.next
+		fast = fast.next.next
+	}
+	return false;
+}
+
+public int addByLevel(Node node, int level) {
+	int sum = 0
+	if (level = 0) {
+		return node.value;
+	}
+	if node.left != null 
+		sum += addByLevel(node.left, level - 1);
+
+	if ndoe.right != null
+		sum += addByLeve;(node.right, level - 1)
+
+	return sum
+}
+
+public boolean hasLoop(Node start) {
+	Node single = start;
+	Node double = start;
+	while double 
+}
+
+public boolean contains(Node node, int number) {
+	if (node == null) {
+		return false;
+	}
+	if (node.value() == number) {
+		return true;
+	}
+	contains(Node.left, number);
+	contains(Node.right, number);dd
+}
+
+

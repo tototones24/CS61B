@@ -1,0 +1,162 @@
+package graph;
+
+import org.junit.Test;
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
+/**
+ * Will be used to test the traversal class.
+ * @author Antonio Conreras
+ *
+ */
+
+public class PathsTesting {
+
+    public class HugsGraphsPath extends SimpleShortestPaths {
+        public HugsGraphsPath(Graph G, int source, int dest) {
+            super (G, source, dest);
+            // _Graph = G;
+            // _Source = source;
+            // _Dest = dest;
+
+        }
+        @Override
+        public double getWeight(int u, int v) {
+            // return (double) _Graph.getLabel(u, v);
+            if (u == 5 && v == 6) {
+                return 30.0;
+            }
+            if (u == 5 && v == 3) {
+                return 9.1;
+            }
+            if (u == 4 && v == 5) {
+                return 11.2;
+            }
+            if (u == 4 && v == 3) {
+                return 102.0;
+            }
+            if (u == 4 && v == 2) {
+                return 12.2;
+            }
+            if (u == 2 && v == 3) {
+                return 6.5;
+            }
+            if (u == 4 && v == 1) {
+                return 0.1;
+            }
+            return 0;
+        }
+        @Override
+        protected double estimatedDistance(int v) {
+            // return (double) _Graph.getLabel(v);
+            if (v == 4) {
+                return 102.0;
+            }
+            if (v == 2) {
+                return 4;
+            }
+            if (v == 5) {
+                return 5.1;
+            }
+            if (v == 6) {
+                return 40.0;
+            }
+            if (v == 1) {
+                return 500.0;
+            }
+            return 0;
+        }
+    }
+
+    @Test
+    public void testingWeights() {
+        // DirectedGraph newGraph = new DirectedGraph();
+        // LabeledGraph<Double, Double> label = new LabeledGraph<Double, Double>(newGraph);
+        // label.add();
+        // label.add();
+        // label.add();
+        // label.add();
+        // label.add();
+        // label.add();
+        // label.remove(1);
+        // label.add(5, 6);
+        // label.add(5, 3);
+        // label.add(4, 5);
+        // label.add(4, 3);
+        // label.add(4, 2);
+        // label.add(2, 3);
+        // label.setLabel(5, 6, 30.0);
+        // label.setLabel(5, 3, 9.1);
+        // label.setLabel(4, 5, 11.2);
+        // label.setLabel(4, 3, 102.0);
+        // label.setLabel(4, 2, 12.2);
+        // label.setLabel(2, 3, 6.5);
+        // label.setLabel(4, 102.0);//
+        // label.setLabel(2, 4.0);//
+        // label.setLabel(5, 5.1);//
+        // label.setLabel(6, 40.0);
+        // HugsGraphsPath testingGraph = new HugsGraphsPath(label, 4, 3);
+        // testingGraph.setPaths();
+        // assertTrue(testingGraph.getWeight(5, 6) == 30.0);
+        // //assertEquals(30.0, testingGraph.getWeight(5, 6));
+        // assertEquals(4, testingGraph.getPredecessor(5));
+        // assertEquals(4, testingGraph.getSource());
+        // assertEquals(3, testingGraph.getDest());
+        // ArrayList<Integer> expected = new ArrayList<Integer>();
+        // expected.add(4);
+        // expected.add(2);
+        // expected.add(3);
+        // assertEquals(expected, testingGraph.pathTo());
+        // assertFalse(testingGraph.getPredecessor(6) == 5);
+        // assertEquals(4, testingGraph.getPredecessor(5));
+        DirectedGraph newGraph = new DirectedGraph();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add();
+        newGraph.add(4, 1);
+        newGraph.add(1, 8);
+        newGraph.add(5, 6);
+        newGraph.add(5, 3);
+        newGraph.add(4, 5);
+        newGraph.add(4, 3);
+        newGraph.add(4, 2);
+        newGraph.add(2, 3);
+        newGraph.add(6, 7);
+        HugsGraphsPath testingGraph = new HugsGraphsPath(newGraph, 4, 3);
+        testingGraph.setPaths();
+        assertTrue(testingGraph.getWeight(5, 6) == 30.0);
+        //assertEquals(30.0, testingGraph.getWeight(5, 6));
+        // assertTrue(testingGraph.getWeight(5, 6)) == 2);
+
+        assertEquals(4, testingGraph.getPredecessor(5));
+        assertEquals(4, testingGraph.getSource());
+        assertEquals(3, testingGraph.getDest());
+
+        ArrayList<Integer> expected = new ArrayList<Integer>();
+        expected.add(4);    
+        expected.add(2);
+        expected.add(3);
+        assertEquals(expected, testingGraph.pathTo());
+        // assertFalse(testingGraph.getPredecessor(6) == 5);
+        assertEquals(0, testingGraph.getPredecessor(7));
+        assertEquals(4, testingGraph.getPredecessor(5));
+        assertEquals(0, testingGraph.getPredecessor(8));
+
+
+
+
+
+    }
+    /** Represenst the graph. */
+    LabeledGraph _Graph;
+    /** Represents the source. */
+    int _Source;
+    /** Represents the dest. */
+    int _Dest;
+
+}

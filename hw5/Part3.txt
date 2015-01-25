@@ -1,0 +1,14 @@
+@author Antonio Conteras;
+
+1.  The function is dominated by theta(n^2). 
+   Worst case running time would be theta(n^2)
+
+2. Worst case would be theta(log(n^3))
+
+
+3. Each iteration is n(n-1)/2 .  
+   Worst case would be theta(n^2).
+
+4. Worst Case Running Time is: theta(m + n).
+
+5. Worst Case Running Time is: theta nlg(n).

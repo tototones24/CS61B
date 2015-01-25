@@ -1,0 +1,31 @@
+start Start playing the current position, if not doing so already (has no effect if currently playing).
+	  Takes moves alternately from Red and Blue according to thier color and the current total number
+	  of spots on the board: if the spot count plus th eboard size is even, it is Red's move, and if
+	  odd it is Blue's move.
+	  
+quit Exits the program
+
+auto P stops the current game until the next start command and causes the player O to be played by an 
+	 automated player (an AI) on the subsequent moves.  The value P must be "red" or "blue".
+	 Initially, Blue is an automated player.
+	 
+manual P stops any current game until the next start command and causes player P to take moves from
+	   the terminal on subsequent moves.  The value of P is as for the auto command.  Initially, 
+	   Red is the manual player.
+	   
+size N stops any current game, clears the board to its initial configuration, and sets the size of the
+	 board to N squares, where 2 <= N <= 10.  Initially, N = 6.
+ 
+set R C N P Stops any current game.  Put N spots at R and column C.  P is either 'b' or 'r' indicating
+	the color of the square.  when N is 0, P is ignored and the square is cleared.  N must be non-negative
+	and less than or equal to the number of neigboring squares.
+	
+dump This command is especially for testing and debigging.  It prints the board.
+
+seed N if you program's automated players use pseudo-random numbers to choose moves, this command sets
+	 the random seed to N (a long integer).  This command has no effect if there is no random component
+	 to your automated players (or if you don't use them in a particular game).  It doesn't matter 
+	 exactly how you use N as long as your autonated player behaves identically each time it is seeded
+	 with N.  In the absence of a seed command, do what you want to want to seed your generator.
+	 
+help Print a brief summary of the commands.

@@ -1,0 +1,11 @@
+K 10
+svn:ignore
+V 13
+
+students.db
+
+K 13
+svn:mergeinfo
+V 36
+/staff/proj1:19441-26696,26703-30255
+END

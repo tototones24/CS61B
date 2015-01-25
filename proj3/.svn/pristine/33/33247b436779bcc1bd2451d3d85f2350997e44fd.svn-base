@@ -1,0 +1,11 @@
+package graph;
+
+import java.util.ArrayDeque;
+
+public class SubArrayDeq<T> extends ArrayDeque<T> {
+	
+	@Override
+	public T poll() {
+		return pollLast();
+	}
+}

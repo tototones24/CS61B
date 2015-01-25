@@ -1,0 +1,10 @@
+To begin the program run the following commands
+java jump61.Main
+then you select a size "size 4"
+then you can select how you want to run the game.  By default the game
+will run with manual red and auto blue.  But you can choose to switch
+this by simply inputting the commands "auto red, manual blue".  
+At this point you are ready to start the game so just input "start".
+If you are playing manually you will be asked to input a spot "red> 1
+1" or you can run several commands "dump, clear, etc.."
+

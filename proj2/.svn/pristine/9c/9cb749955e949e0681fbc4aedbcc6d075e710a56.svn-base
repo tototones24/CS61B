@@ -1,0 +1,349 @@
+// This file contains a SUGGESTION for the structure of your program.  You
+// may change any of it, or add additional files to this directory (package),
+// as long as you conform to the project specification.
+
+// Comments that start with "//" are intended to be removed from your
+// solutions.
+package jump61;
+
+import static jump61.Side.*;
+import static jump61.Square.square;
+import java.util.Stack;
+import java.util.ArrayList;
+import java.util.List;
+
+/** A Jump61 board state that may be modified.
+ *  @author Antonio Contreras
+ */
+class MutableBoard extends Board {
+    
+    /** An N x N board in initial configuration. */
+    MutableBoard(int N) {
+        //FIXME
+        size = N + 1;
+        _white = N * N;
+        _red = 0;
+        _blue = 0;
+        _Mboard = new Square[size][size];
+        for (int row = 1; row < size; row++) {
+            for (int col = 1; col < size; col++) {
+                _Mboard[row][col] = Square.square(WHITE, 1);
+            }
+        }
+        //END OF MY FIXES
+        _history = new Stack<Board>();
+    }
+    
+    /** A board whose initial contents are copied from BOARD0, but whose
+     *  undo history is clear. */
+    MutableBoard(Board board0) {
+        // FIXME
+        // this(board0.size());
+        this(board0.size());
+        this.copy(board0);
+        //end of my implementation
+    }
+    
+    @Override
+    void clear(int N) {
+        // FIXME
+        size = N + 1;
+        _white = N * N;
+        _red = 0;
+        _blue = 0;
+        _Mboard = new Square[size][size];
+        for (int row = 1; row < size; row++) {
+            for (int col = 1; col < size; col++) {
+                _Mboard[row][col] = Square.square(WHITE, 1);
+            }
+        }
+        _history = new Stack<Board>();
+        //  end of my fixes
+        announce();
+    }
+    
+    @Override
+    void copy(Board board) {
+        // FIXME
+        //going to call clear() here
+        for (int row = 1; row < board.size(); row++) {
+            for (int col = 1; col < board.size(); col++) {
+                Square board0Square = board.get(row, col);
+                Side player = board0Square.getSide();
+                int spots = board0Square.getSpots();
+                _Mboard[row][col] = Square.square(player, spots);
+            }
+        }
+        _red = numOfSide(RED);
+        _blue = numOfSide(BLUE);
+        _white = numOfSide(WHITE);
+        
+        //_history = new Stack<Board>();  //this fucks up when I rewrite the history
+    }
+    
+    /** Copy the contents of BOARD into me, without modifying my undo
+     *  history.  Assumes BOARD and I have the same size. */
+    private void internalCopy(Board board) {
+        // was type MUTABLEBOARD changed to board.
+        // FIXME
+        for (int row = 1; row < board.size(); row++) {
+            for (int col = 1; col < board.size(); col++) {
+                Square board0Square = board.get(row, col);
+                Side player = board0Square.getSide();
+                int spots = board0Square.getSpots();
+                _Mboard[row][col] = Square.square(player, spots);
+            }
+        }
+        _red = numOfSide(RED);
+        _blue = numOfSide(BLUE);
+        _white = numOfSide(WHITE);
+        //END OF MY FIXES
+    }
+    
+    @Override
+    int size() {
+        // REPLACE WITH SOLUTION
+        return _Mboard.length - 1;
+        //end of my implementation
+    }
+    
+    @Override
+    Square get(int n) {
+        int _row = row(n);
+        int _col = col(n);
+        return _Mboard[_row][_col];
+    }
+    
+    @Override
+    int numOfSide(Side side) {
+        // REPLACE WITH SOLUTION
+        int sider = 0;
+        if (side == RED) {
+            sider = _red;
+        }
+        if (side == BLUE) {
+            sider = _blue;
+        }
+        if (side == WHITE) {
+            sider = _white;
+        }
+        return sider;
+    }
+    
+    @Override
+    int numPieces() {
+        int numOfSpots = 0;
+        for (int row = 1; row < size; row++) {
+            for (int col = 1; col < size; col++) {
+                numOfSpots += _Mboard[row][col].getSpots();
+            }
+        }
+        return numOfSpots;
+    }
+    
+    @Override
+    void addSpot(Side player, int r, int c) {
+        // FIXME
+        //Board copyOriginal = new MutableBoard(this);  //does this push a copy of the original board before the changes?
+        //_history.push(copyOriginal);
+        markUndo(); //furst
+        explosion(player, r, c);
+        announce();
+    }
+    
+    
+    /** The the actuall jumping of the spot is done here.
+     * @param player
+     * @param r
+     * @param c
+     */
+    void explosion (Side player, int r, int c) {
+        if (player == BLUE)
+            _blue += 1;
+        if (player == RED)
+            _red += 1;
+        int spots = _Mboard[r][c].getSpots();
+        Square square = Square.square(player, spots + 1);
+        _Mboard[r][c] = square;
+        if (_Mboard[r][c].getSpots() > neighbors(sqNum(r, c)) && numOfSide(player) != (size() * size())) {
+            List<Integer> neighs = _neighbors(r, c);
+            int _spots = _Mboard[r][c].getSpots();
+            Square _square = Square.square(player, 1); //replaced spots - neighbors(sqNum(r, c)) with 1
+            _Mboard[r][c] = _square;
+            for (int neighbor : neighs) {
+                int _ROW = row(neighbor);
+                int _COL = col(neighbor);
+                explosion(player, _ROW, _COL);
+                //addSpot(player, neighbor);  to go back to the original results just go commonent was is uncommented.
+            }
+        }
+    }
+    
+    
+    
+ 
+    /**
+     * Returns the neighbors around R and C
+     * @param r the row
+     * @param c the col
+     * @return return the neibors
+     */
+    private List<Integer> _neighbors(int r, int c) {
+        List<Integer> squareNums = new ArrayList<Integer>();
+        if ((r - 1) >= 1 ) { //_Mboard[r - 1][c] //top
+            int sqNumber = sqNum(r - 1, c); //was c now c + 1
+            squareNums.add(sqNumber);
+        }
+        if ((r + 1) <= size()) { //_Mboard[r + 1][c]; //bottom
+            int sqNumber = sqNum(r + 1, c); //was c but i changed to c plus 1
+            squareNums.add(sqNumber);
+        }
+        if ((c - 1) >= 1) { //_Mboard[r][c -]; //left
+            int sqNumber = sqNum(r, c - 1); //was c - 1 chaned to c.
+            squareNums.add(sqNumber);
+        }
+        if ((c + 1) <= size()) { //_Mboard[r][c + 1] //right
+            int sqNumber = sqNum(r, c + 1); //was c + 1 but i made it c + 2
+            squareNums.add(sqNumber);
+        }
+        return squareNums;
+    }
+    
+    @Override
+    void addSpot(Side player, int n) {
+        // FIXME
+        addSpot(player, row(n), col(n)); //this is an easier implementation.
+        announce();
+    }
+    
+    @Override
+    void set(int r, int c, int num, Side player) {
+        internalSet(sqNum(r, c), square(player, num));
+    }
+    
+    @Override
+    void set(int n, int num, Side player) {
+        internalSet(n, square(player, num));
+        announce();
+    }
+    
+    @Override
+    void undo() {
+        // FIXME
+        // while (_history.peek() != some sort of marker) {
+        //     _history.pop()
+        // }
+        if (_history.peek() != null)
+            this.copy(_history.pop());
+        //end of my implementation
+    }
+    
+    /** Record the beginning of a move in the undo history. */
+    private void markUndo() {
+        // FIXME  //NOT COMPLETE
+        Board copyOriginal = new MutableBoard(this);  //does this push a copy of the original board before the changes?
+        _history.push(copyOriginal);
+        // while (_history.peek() != some type of marker) {
+        //     move = _history.pop();
+        //     //undo(move);
+        // }
+        //end of my implementation
+    }
+    
+    /** Set the contents of the square with index IND to SQ. Update counts
+     *  of numbers of squares of each color.  */
+    private void internalSet(int ind, Square sq) {
+        // FIXME
+        int _Row = row(ind);
+        int _Col = col(ind);
+        Side player = _Mboard[_Row][_Col].getSide();
+        Side squareColor = sq.getSide();
+        if (squareColor == BLUE) {
+            _blue += 1;
+        }
+        if (squareColor == RED) {
+            _red += 1;
+        }
+        if (squareColor == WHITE) {
+            _white += 1;
+        }
+        if (player == BLUE) {
+            _blue -= 1;
+        }
+        if (player == RED) {
+            _red -= 1;
+        }
+        if (player == WHITE) {
+            _white -= 1;
+        }
+        _Mboard[_Row][_Col] = sq;
+    }
+    
+    /** Notify all Observers of a change. */
+    private void announce() {
+        setChanged();
+        notifyObservers();
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof MutableBoard)) {
+            return obj.equals(this);
+        } else {
+            MutableBoard compBoard = (MutableBoard) obj;
+            // REPLACE WITH SOLUTION
+            if (compBoard.size() != this.size()) {
+                return false;
+            }
+            if (compBoard.numOfSide(RED) != this.numOfSide(RED) || compBoard.numOfSide(BLUE) != this.numOfSide(BLUE) || compBoard.numOfSide(WHITE) != this.numOfSide(WHITE)) {
+                return false;
+            }
+            for (int r = 1; r < size; r++) {
+                for (int c = 1; c < size; c++) {
+                    int _row = row(r);
+                    int _col = col(c);
+                    int numberSq = sqNum(_row, _col);
+                    if (!_Mboard[r][c].equals(this.get(numberSq))) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+            
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        // REPLACE WITH SOLUTION.  RETURN A NUMBER THAT IS THE SAME FOR BOARDS
+        // WITH IDENTICAL CONTENTS (IT NEED NOT BE DIFFERENT IF THE BOARDS
+        // DIFFER.)  THE CURRENT STATEMENT WORKS, BUT IS NOT PARTICULARLY
+        // EFFICIENT.
+        return 0;
+    }
+    
+    //I added this
+    /** This will be the representation of the mutableboard. */
+    private Square[][] _Mboard;
+    
+    /** Returns the size of one side of the array*/
+    private int size;
+    
+    /** Counts the number of white spots. */
+    private int _white;
+    
+    /** Counts the number of red spots. */
+    private int _red;
+    
+    /** Counts the number of blue spots. */
+    private int _blue;
+    
+    /** The history of the moves. */
+    private Stack<Board> _history;
+    
+    /** The number of times a move is done. */
+    private int numOfMoves;
+    
+}
+
+

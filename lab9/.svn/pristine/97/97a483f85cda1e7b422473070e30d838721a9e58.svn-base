@@ -1,0 +1,12 @@
+# Simple 2x2 test that will test that the 'set' command works.
+#This game is played on auto Red and Auto Blue.
+staff-jump61
+None
+===#1===
+size 2
+auto Red
+start
+%rb
+%e
+quit
+===#2===

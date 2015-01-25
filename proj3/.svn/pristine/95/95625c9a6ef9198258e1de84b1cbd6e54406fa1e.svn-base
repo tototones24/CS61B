@@ -1,0 +1,149 @@
+package graph;
+import java.util.ArrayList;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+/**
+ * Will test the functionality of DepthFirstTraversal and BreadthFirstTraversal
+ * @author Antonio Contreras
+ */
+
+public class TraversalTesting {
+	
+	class SubDepthFirstSearch extends DepthFirstTraversal {
+		
+		protected SubDepthFirstSearch(Graph G) {
+			super(G);
+		}
+
+		@Override
+		 protected boolean visit(int v) {
+			actual.add(new Integer(v));
+			return true;
+	    }
+		
+		@Override
+		 protected boolean postVisit(int v) { 
+			actualPost.add(new Integer(v));
+			return true;
+	    }
+		
+		/** Will hold the actual output for the DFS. */
+		ArrayList<Integer> actual = new ArrayList<Integer>();
+		
+		/** Will hold the actual output for the DFS postvisit. */
+		ArrayList<Integer> actualPost = new ArrayList<Integer>();
+	}
+	
+	class SubBreadthFirstSearch extends BreadthFirstTraversal {
+		
+		protected SubBreadthFirstSearch(Graph G) {
+			super(G);
+		}
+		
+		@Override
+		 protected boolean visit(int v) {
+			actual.add(new Integer(v));
+			return true;
+	    }
+		/** Will hold the actual output for the DFS. */
+		ArrayList<Integer> actual = new ArrayList<Integer>();
+	}
+	@Test
+	public void TestingTrav() {
+		DirectedGraph a = new DirectedGraph();
+		a.add();
+        a.add();
+        a.add();
+        a.add();
+        a.add();
+        a.add(5, 4);
+        a.add(5, 3);
+        a.add(4, 1);
+        a.add(3, 2);
+        a.add(1, 5);
+
+        // for DepthFirst
+        ArrayList<Integer> expected = new ArrayList<Integer>(); //first answer 
+        expected.add(5);
+        expected.add(3);
+        expected.add(2);
+        expected.add(4);
+        expected.add(1);
+        ArrayList<Integer> expectedT = new ArrayList<Integer>(); //second answer
+        expectedT.add(5);
+        expectedT.add(4);
+        expectedT.add(1);
+        expectedT.add(3);
+        expectedT.add(2);
+        
+        SubDepthFirstSearch subDepSearch = new SubDepthFirstSearch(a);
+        subDepSearch.traverse(5);
+        //assertTrue(expected.equals(subDepSearch.actual));
+        boolean correctAnswer = false;
+        if (expected.equals(subDepSearch.actual) || expectedT.equals(subDepSearch.actual)) {
+            correctAnswer = true;
+        }
+        assertTrue(correctAnswer);
+
+        //postvisiting DFS
+        ArrayList<Integer> expectedPostOne = new ArrayList<Integer>(); //first answer 
+        expectedPostOne.add(1);
+        expectedPostOne.add(4);
+        expectedPostOne.add(2);
+        expectedPostOne.add(3);
+        expectedPostOne.add(5);
+        ArrayList<Integer> expectedPostTwo = new ArrayList<Integer>(); //second answer
+        expectedPostTwo.add(2);
+        expectedPostTwo.add(3);
+        expectedPostTwo.add(1);
+        expectedPostTwo.add(4);
+        expectedPostTwo.add(5);
+        
+        boolean correctAnswerPost = false;
+        //System.out.println(subDepSearch.actualPost);
+        if (expectedPostOne.equals(subDepSearch.actualPost) || expectedPostTwo.equals(subDepSearch.actualPost)) {
+            correctAnswerPost = true;
+        }
+        assertTrue(correctAnswerPost); //uncomment right here
+        
+
+        //for breadthfirst
+        ArrayList<Integer> expectedTwo = new ArrayList<Integer>(); //first solution
+        expectedTwo.add(5);
+        expectedTwo.add(4);
+        expectedTwo.add(3);
+        expectedTwo.add(1);
+        expectedTwo.add(2);
+        ArrayList<Integer> expectedOne = new ArrayList<Integer>(); //second solution
+        expectedOne.add(5);
+        expectedOne.add(3);
+        expectedOne.add(4);
+        expectedOne.add(1);
+        expectedOne.add(2);
+        ArrayList<Integer> expectedThree = new ArrayList<Integer>(); // third solution solution
+        expectedThree.add(5);
+        expectedThree.add(4);
+        expectedThree.add(3);
+        expectedThree.add(2);
+        expectedThree.add(1);
+        ArrayList<Integer> expectedFour = new ArrayList<Integer>(); //4th solution solution
+        expectedFour.add(5);
+        expectedFour.add(3);
+        expectedFour.add(4);
+        expectedFour.add(2);
+        expectedFour.add(1);
+
+        SubBreadthFirstSearch subBreadth = new SubBreadthFirstSearch(a);
+        subBreadth.traverse(5);
+        
+        boolean correctAnswerB = false;
+        if (expectedOne.equals(subBreadth.actual) || expectedTwo.equals(subBreadth.actual) ||
+                expectedThree.equals(subBreadth.actual) || expectedFour.equals(subBreadth.actual)) {
+            correctAnswerB = true;
+        }
+        assertTrue(correctAnswerB);
+
+		}
+}

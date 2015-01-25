@@ -1,0 +1,2 @@
+I was able to fix the error that caused me to fail test2.  But I
+cannot manage to pass test1.  To replicate the error run make check.

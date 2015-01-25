@@ -1,0 +1,22 @@
+# Will test several moves of a fully manuel game.
+staff-jump61
+None
+===#1===
+size 3
+manual Blue
+start 
+3 3
+1 1
+2 2
+3 1
+2 2
+3 2
+1 3
+2 3
+1 2
+2 3
+2 1
+2 3
+dump
+quit
+===#2===

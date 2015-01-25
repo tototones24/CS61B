@@ -1,0 +1,276 @@
+<html>
+<head>
+    <title>Lab 2: Pointers, Debugging, and GJDB</title>
+    <link rel="stylesheet" href="../../../styles/lab_61b.css" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800" type="text/css" rel="stylesheet" media="screen">
+</head>
+<body>
+    <div id="navbar">
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/"><div class="navitem navclass">CS 61B</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/lectures/"><div class="navitem">Lecture</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/hw/"><div class="navitem">Lab/Homework</div></a>
+        <a href="https://inst.eecs.berkeley.edu/~cs61b/fa14/ta-materials/"><div class="navitem">Discussion</div></a>
+        <a href="https://piazza.com/class/hv91iivr1r15z"><div class="navitem">Piazza</div></a>
+    </div>
+    <h1 id="title">Lab 5: Packages, Testing, and Inheritance with Large Systems</h1>
+    <center>Submit by Friday, Oct 3 at 11:59 PM</center>
+    <center>This lab is not fully battle tested. Please report any errors/ambiguities/pointless exercises in suffering to your lab TA or to me directly: hug@cs.berkeley.edu</center>
+    <h2 id='table-of-contents'>Table of Contents</h2>
+    <ul>
+        <li><a href="#prelab">Pre-lab</a></li>
+        <li><a href="#Introduction">Introduction</a></li>
+        <li><a href="#Experiment">Experimenting with the Sample Creature</a></li>
+        <li><a href="#devplip">Developing the Plip Class</a></li>
+        <li><a href="#makefile">Creating Test Friendly Makefiles</a></li>
+
+        <li><a href="#pliprun">Running the Plip Class</a></li>
+        <li><a href="#clorus">The Clorus Class</a></li>
+        <li><a href="#enrichment">Future Work</a></li>
+
+
+
+    </ul>
+
+    <h2 id="prelab">Pre-lab</h2>
+
+    <p>None this week.
+
+    <h2 id="Introduction">Introduction</h2>
+
+    <p>Don't forget to submit a "hello.txt" along with your lab that contains the magic word of the day. Ordinarily you'd need to either finish the lab before Wednesday at 2 if you didn't want ot attend, but since this lab was released on Tuesday, that's not enough time, so this week the magic word is fere, and it is "clorus".
+
+    <p>In this lab, you'll create a package named <tt><b>creature</b></tt> that will implement two creatures (or more, if you'd like) that will inhabit a world simulated by the <tt><b>huglife</b></tt> package. Along the way we'll learn how to debug small pieces of a much larger system, even if those small pieces happen to live inside a package (a very good idea, by the way, for project 1).
+
+    <p>Start the lab by booting up the HugLife simulator. To do this, use the following commands:
+
+    <pre>  $ make
+  $ java huglife.HugLife samplesolo</pre>
+
+    <p>This starts up a world I've created called samplesolo. You should see a little red square wandering around randomly. 
+
+    <p>Your job for this assignment is to add two classes to the creatures directory: <tt>Plip.java</tt> and <tt>Clorus.java</tt>. Eventually these two types of creatures will also inhabit the world, and unlike this red guy, they actually do something interesting.
+
+    <p>These classes will extend the <tt>huglife.Creature</tt> package, which provides a template that all creatures should follow. 
+    
+    <h4>How the Simulator Works</h4>
+
+    <p>Creatures live on an NxN grid, with no wraparound. Each square may be empty, impassible, or contain exactly one creature. Each tic, exactly one creature takes a single action. Creatures choose actions in a round-robin fashion.
+
+    <p>There is a global queue of all creatures in the world, waiting their turn to take an action. When a Creature is next in line to move, the world simulator tells that creature who its four neighbors are, and requests a choice of action from the creature (more specifically, the world simulator calls the Creature's chooseAction method, which takes as an argument a collection of all four neighbors).
+
+    <p>Based on the identity of the four neighbors, the Creature chooses one of exactly five actions: MOVE, REPLICATE, ATTACK, STAY, or DIE. MOVE, REPLICATE, and ATTACK are directional actions, and STAY and DIE are stationary actions. For example, if the acting Creature sees a creature to its LEFT that it can eat, it might choose to ATTACK LEFT. If a creature takes a directional action, it also specifies either a direction or a location. One of your main tasks for this lab is to write the code that makes Creature decisions. Actions are returned as objects of type Action, which are fully described in Action.java.
+
+    <p>The chosen Action is given to the simulator which enacts the changes to the world grid (much like how the Game class in 2048 did all the drawing for you). 
+
+    <p>Unlike 2048, you'll be responsible for writing the code that tracks the state of each Creature. For example, after the acting Creature eats another Creature, the acting Creature might become stronger, die, change colors, etc. 
+
+    <p>This will be accomplished by a callback to the creature, which (as described below) is required to provide move(), replicate(), attack(Creature c), and stay() methods that describe how the acting Creature's physical state will evolve after each of these respective actions. There is no die() method since the Creature is simply removed from the world entirely.
+
+
+    <h2 id="Experiment">Experimenting with the sample creature</h2>
+
+    <p>Open up Occupant.java, Creature.java, and SampleCreature.java, which you'll find in the directory for huglife package. 
+
+    <ul><li><b>Occupant</b>. Occupant is a general class for all possible things that can inhabit the grid of the huglife universe. You'll see that Occupants inherit a name, shared by all instances of that Occupant subtype. Furthermore, every occupant must provide a method which returns a color (more on this later). There are two special kinds of Occupants, with names "empty", and "impassible". Empty square and impassible squares represent unoccupied and unoccupiable squares, respectively.
+
+    <li><b>Creature</b>. Creature is a general class for all living things that can inhabit the grid of the huglife universe. All creatures have an energy level, and if that energy level ever falls below zero, the universe will choose the DIE action for them. 
+
+    <p>Every creature must implement four <i><b>callback</b></i> methods: move(), replicate(), attack(), and stay() methods. These describe what the creature should do when each of these actions occurs. 
+
+    <p>Creatures must also implement a ChooseAction method, and any reasonable creature will probably find the built-in getNeighborsOfType method useful for doing so. 
+
+    <li><b>SampleCreature</b>. The two creatures you implement for this lab will look somewhat similar to the SampleCreature, so you'll want to consult this class while developing your classes.
+    </ul>
+
+    <p>Try making some changes to the sample creature, and see how your changes affect how things change when you run the HugLife simulator. As one of your experiments, you might have the SampleCreature react in some observable way when it sees a wall. You can do this by requesting a list of all neighbors of type "impassible" from the getNeighborsOfType method.
+
+    <p><b>Important: After you've experimented to your hearts content, use the hw checkout command to revert your project directory to its original state. If you don't know how to do this, see the <a href="http://inst.eecs.berkeley.edu/~cs61b/fa14/docs/hw.pdf">documentation</a> for the homework command.</b> If you get stuck on this, get a neighbor or a lab TA to help you. Maybe someone will even write something on the board (I've intentionally not given you the exact command here).
+
+    <h2 id ="devplip">Developing the Plip class</h2>
+
+    <h3>Basic Plip functionality</h3>
+    <p>Now it's time to add a new type of creature to the world. Go into the creatures directory, and you'll see there is a class file named Plip there, waiting to be filled out. 
+
+    <p>Plips will be lazy (but motile) photosynthesizing creatures that mostly stand around and grow and replicate, but will flee if they happen to see their mortal enemy, the Clorus.
+
+    <p>Let's start with just a few of the properties that we'll eventually need for our Plip class.
+
+    <ul><li>All Plip's name methods should return exactly "plip" with no spaces or capitalization. This is important, since creatures only know how to react to each other based on this name string. Note: This is a bit of a hack, but given what we know about Java, I think it's probably the best way.
+    <li>Plips should lose 0.15 units of energy on a move action, and gain 0.2 units of energy on a stay action.</li>
+    <li>Plips should never have energy greater than 2. If an action would cause the plip to have energy greater than 2, then it should be set to 2 instead.
+    <li>The color method for plips should return a color with red = 99, blue = 76, and green that varies linearly based on the energy of the Plip. If the plip has zero energy, it should have a green value of 63. If it has max energy, it should have a green value of 255. The green value should vary with energy linearly in between these two extremes.
+    </ul>
+
+    <p>It would be theoretically possible to test our Plip class by sticking them on a HugLife world grid and watching what they do (with gjdb or print statements) as they run amok. However, this would be a terrible idea. Instead, it's better to perform testing on the Plip class directly. <b>On project 1, you'll have similar basic units (in that case called Rows and Tables), and you'll probably do much better if you test these basic classes independently instead of in the context of the larger system.</b> 
+
+    <aside class="pquote">
+        <blockquote>
+            <p>Note on testing: It's not necessarily desirable to test everything! Use tests only when you think they might reveal something useful, i.e. there is some chance you'll get something wrong. Figuring out what to test is a bit of an art (and in fact in developing this lab, I undertested, leading me to doing some actual honest-to-goodness debugging, bleh).
+        </blockquote>
+    </aside>
+
+    <p><i></i>
+
+    <p>To test the Plip class, which is part of the creatures package, we can create a test class TestPlip that is also part of the creatures package. You'll see that a skeleton containing a few simple tests is provided.
+
+    <p>One way to run this test file is as follows:
+    <pre>  $ make
+  $ java creatures.TestPlip</pre>
+
+    <p>Try it out and you'll see that our test fails. Now after all that reading you can finally do something! Modify the Plip class according to the specifications above until all tests pass. <b>Make sure you don't forget to rerun make in between calls to the test.</b> Later in this lab we'll discuss how to set up a Makefile to avoid having to do call make in between calls to our tests. 
+
+    <p>Once you're done, you're well on your way to having a fully functional Plip.
+
+    <h3>The Plip replicate method</h3>
+
+    <p>Do not start this part until your Plip class passes all the provided tests. Once you've done so, we'll work on adding the correct replication property to our Plips, namely:
+
+    <ul>
+    <li>When a plip replicates, it keeps 50% of its energy, and the other 50% goes to its offspring. No energy is lost in the replication process.
+    </li></ul>
+
+    <p>Fill in the test for the replicate method. Make sure to test that the returned Plip is not the same Plip as the Plip whose replicate method was called. You can use the JUnit assertNotSame method for this purpose.
+
+    <p>
+
+    <h3>The Plip chooseAction method</h3>
+
+    <p>All that's left is giving the Plip a brain. To do this, you'll be filling out the chooseAction method as follows.
+
+    <ul>
+    <li>The Plip should obey the following behavioral rules in order of preference:
+    <ol>
+    <li>If there are no empty spaces, the Plip should stay.
+    <li>Otherwise, if the Plip has energy greater than 1.0, it should replicate to an available space.
+    <li>Otherwise, if it sees a neighbor with name() equal to "clorus", it will move to any available empty square with probability 25%. It should choose the empty square randomly. As an example, if it sees a "clrous" to the LEFT and to the BOTTOM, and "empty" to the TOP and RIGHT, there is a 25% chance it will move (due to fear of Cloruses), and if it does move, it will pick randomly between RIGHT and TOP.
+    <li>Otherwise, it will stay.</ol>
+    </ul>
+
+    <p>These rules must be obeyed in this strict order! Example: If it has energy greater than 1, it will ALWAYS replicate before trying to run from a clorus.
+
+    <h4>Writing testChoose</h4>
+
+    <p>Uncomment the @Test annotation tag for the testChoose method. This will allow the testChoose method to run when you invoke the <tt>$ java creatures.TestPlip</tt> command. The existing test checks the first rule, namely that if there are no empty spaces next to the plip, then it should stay.
+
+    <p>Add tests for the choose method to your TestPlip class. Everything might look complicated (e.g. we're using a Map, and we haven't talked about them at all!). However, if you use SampleCreature as a guide, I'm hoping that pattern matching will be enough to figure out the syntax. 
+
+    <p>You might find it useful to look at the code for the Action class to see the various constructors for Actions.
+
+    <p>For testing the 25% probability rule, you might simply test that both choices are possible by making many calls and ensuring that each happens at least once. Performing a statistical test is probably a bit too much for lab today (though you're welcome to try).
+
+    <p>If you're totally stuck and there are no lab assistants available to help, you can see sample tests <a href="tell josh to fix!">at this link</a>.
+
+    <h4>Writing testChooseAction</h4>
+
+    <p>After writing a set of tests that you feel happy about, edit the Plip class so that it makes the right choices. You'll want to look carefully at the SampleCreature class as a guide. 
+
+    <h3 id="makefile">Optional: Setting up a Makefile to make testing easier</h3>
+
+    <p>This section is optional. Feel free to skip to the next part of the lab by using <a href="#runplip">this link.</a>
+
+    <p>As we saw above, the creatures package provides a class for testing plips that we ran with:
+    <pre>  $ make
+  $ java creatures.TestPlip</pre>
+
+    <p>Having to alternate between these two commands to make and test test can get a bit annoying to do over and over (and is error prone), so instead, let's open and edit our Makefile (scary!). You'll see it's pretty minimal. The first line of the file just tells the makefile where to find source code. Don't worry about this one.
+
+    <p>The second line is:
+    <pre>porcupine: $(SRCS)</pre>
+
+    <p>This line defines a named rule (with name porcupine) that is only allowed to run under the condition given on the right hande side of the colon, namely that all files in $(SRCS) exist. Since we just defined $(SRCS) based on what files exist a line ago, this check will never fail (unless I guess somehow the files get deleted in between the time $(SRCS) is created on the 1st line and this rule is exected on the second).
+
+    <p>Finally, the makefile tells the javac compiler to compile all of the $(SRCS).
+
+    <p>Let's add a new rule to the Makefile called crecheck, and specify that when this rule is invoked, then make should run the java command on creatures.testPlip. That is, you'll want to add the following to your makefile:
+
+    <pre>crecheck: 
+    java creatures.TestPlip</pre>
+
+    <p>Make sure you use a tab instead of spaces. Makefiles need tabs. This is insane, but we can't do anything about it except accept it. Note that we provide no dependency on the right hand side of the colon, meaning that this rule has no required files.
+
+    <p>Try using <tt>make crecheck</tt> and you'll see that your code runs. However, this isn't good enough; if you changed your code, the makefile would run an out of date test!
+
+    <p>We want the makefile to only run the tests as long as our .class files are up to date. To do this, we could modify the makefile to check all of the .class files to make sure they're newer than their respective .java files, but this would be a mess.
+
+    <p>A more common solution is to create a blank file called sentinel and tell Java to make sure that sentinel is newer than all of our java files. To do this, we'd add something to the right hand side of our crecheck rule as follows:
+
+    <pre>crecheck: sentinel
+    java creatures.TestPlip</pre>
+
+    <p>However, if you try running make now, you'll see that it complains that it has no rule to make sentinel. What make is doing is looking for any rules named 'sentinel:' that will tell it how to make sentinel.
+
+    <p>Let's give it one. Rename the porcupine to sentinel, and add the line <tt>touch sentinel</tt> to the bottom of the sentinel: rule, so that we have five nonblank lines of your Makefile that now read:
+
+    <pre>sentinel: $(SRCS)
+    javac $(SRCS)
+    touch sentinel
+
+crecheck: sentinel
+    java creatures.TestPlip</pre>
+
+    <p>To understand what this all means, you need to know that the touch command creates a blank file with the given name (in this case sentinel).
+
+    <p>Thus, the overall effect is that if someone requests the crecheck rule, the makefile will look and see that crecheck: requires a file called sentinel. Make will then inspect the existing sentinel file, and if it either doesn't exist or it is older than ANY file in $(SRCS), then the sentinel: rule will execute, resulting in recompilation and the generation of a blank sentinel file with the current date. Finally, the crecheck: rule will run, and the test will execute. Neat!
+
+    <h2 id="runplip">Running the Plip class</h2>
+
+    <p>Assuming your tests worked, you can now see how your Plips fare in the real HugLife world. Use the commands:
+
+    <pre>  $ make
+  $ java huglife.HugLife sampleplip</pre>
+
+    <p>You should see your plips happily growing along. If something goes wrong, it's probably because your tests are not thorough enough. If this is the case, using the error messages, add new tests to TestPlip until something finally breaks. And if you're stuck, feel free to use the <a href="tell josh to fix!">reference TestPlip solution</a> linked above in this page. If you feel very confident in your Plip class and the HugLife simulator is still failing, it could be a bug in the simulator. Let me know by email.
+
+    <h2 id ="clorus">Introducing the Clorus</h2>
+
+    <p>We'll now add another Creature and corresponding test to the creatures package. This time, we'll be implementing the Clorus, a fierce blue colored box that enjoys nothing more than snacking on hapless Plips. 
+
+    <p>This time, you'll create your TestClorus and Clorus classes from scratch (using what you've got so far as a guide).
+
+    <p>The Clorus should obey the following rules exactly:
+
+    <ul><li>All Cloruses must have a name equal to exactly "clorus" (no capitalization or spaces)!</li>
+    <li>Cloruses should lose 0.03 units of energy on a move action, and <b>lose</b> 0.01 units of energy on a stay action.</li>
+    <li>Cloruses have no restrictions on their maximum energy.
+    <li>The color method for Cloruses should always return the color R = 34, G = 0, B = 231.
+    <li>When replicating, Cloruses should receive half of their energy and their offspring should receive the other half. 
+    <li>Cloruses should obey exactly the following behavioral rules:
+    <ol><li>If there are no empty squares the Clorus will STAY (even if there are Plips nearby they could attack).
+    <li>Otherwise, if any Plips are seen, the Clorus will ATTACK one of them randomly.
+    <li>Otherwise, if the Clorus has energy greater than or equal to one, it will REPLICATE to a random empty square.
+    <li>Otherwise, the Clorus will MOVE.
+    </ul>
+
+    <p>As before, write a TestClorus class. You probably don't need to test the move(), stay(), or color() methods, but you're welcome to. Instead, it's probably only necessary to test the Choose() action. Your tests for TestClorus should involve at least one of each type of action.
+
+    <p>Once you've written tests, write the Clorus class itself, again from scratch.
+
+    <h2>Showtime</h2>
+
+    <p>We did it.
+
+    <p>Now it's time to watch Cloruses and Plips battling it out. Use the following command to kick off a Manichaean struggle that will end either in eternal harmony or in a lonely immortal wandering the wastes forever.
+
+        <pre>  $ make
+  $ java huglife.HugLife sampleplip</pre> 
+
+  <p>If you did everything right, it should hopefully look cool. You might consider tweaking the HugLife simulator parameters, including the world size and the pause time between simulation steps. Be warned that world sizes about ~50x50 are probably going to run fairly slowly.
+
+    <h2 id ="enrichment">Enrichment</h2>
+
+    <p>There's a hell of a lot one could do to improve the simulation. Possibilities include:
+
+    <ul><li>Finding more interesting starter worlds using the given creatures. Note that you can add "impassible" tiles which will act as black boxes that cannot be crossed.
+    <li>Additional creatures: There's all kinds of strange possibilities, like creatures that take on the attributes of creatures they eat, creatures that gain energy based on the total population of their own species (using static variables), etc.
+    <li>Evolution: Having creatures evolve with each generation.
+    <li>Size: Giving each creature a size so that it doesn't necessarily fill up an entire box.
+    <li>Being attacked: At the moment all attacked creatures automatically die. You could add an attacked() callback that returns true if the creature should die, and false otherwise. 
+    <li>Movement and sensing at a distance: At the moment, creatures can only see their immediate neighbors, and generally only take actios on squares immediately adjacent.
+    <li>Generation of creatures through clicks. The StdDraw library provides the ability to provide user input with the mouse. One could imagine clicking to generate new creatures.
+    </li></ul>
+
+    <p>Let me know if you do anything you think is cool.
+
+</body>
+
+</html>

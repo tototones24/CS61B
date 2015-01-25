@@ -1,0 +1,365 @@
+package graph;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+/* See restrictions in Graph.java. */
+import java.util.LinkedList;
+
+/** A partial implementation of Graph containing elements common to
+ *  directed and undirected graphs.
+ *
+ *  @author Antonio Contreras
+ */
+abstract class GraphObj extends Graph {
+
+    /** A new, empty Graph. */
+    GraphObj() {
+        strongestVertex = 0;
+        adjList = new HashMap<Integer, LinkedList<Integer>>();
+        orderedVertices = new ArrayList<Integer>();
+        orderedEdges = new ArrayList<int[]>();
+        orderedUndEdges = new ArrayList<int[]>();
+        edgesID = new HashMap<int[], Integer>();
+        orderedPredKey = new HashMap<Integer, ArrayList<Integer>>();
+        newID = 0;
+    }
+
+    @Override
+    public int vertexSize() {
+        return adjList.size();
+    }
+
+    @Override
+    public int maxVertex() {
+        return strongestVertex;
+    }
+
+    @Override
+    public int edgeSize() {
+        if (isDirected()) {
+            int i = 0;
+            for (Integer key : adjList.keySet()) {
+                i += adjList.get(key).size();
+            }
+            return i;
+        } else {
+            int j = 0;
+            for (Integer key : adjList.keySet()) {
+                j += adjList.get(key).size();
+            }
+            return j / 2;
+        }
+    }
+
+    @Override
+    public abstract boolean isDirected();
+
+    @Override
+    public int outDegree(int v) {
+        if (!adjList.containsKey(v)) {
+            return 0;
+        }
+        return adjList.get(v).size();
+    }
+
+    @Override
+    public abstract int inDegree(int v);
+
+    @Override
+    public boolean contains(int u) {
+        return adjList.containsKey(u);
+    }
+
+    @Override
+    public boolean contains(int u, int v) {
+        if (adjList.containsKey(u) && adjList.containsKey(v)) {
+            if (adjList.get(u).contains(v)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public int add() {
+        for (int i = 1; i <= adjList.size(); i++) {
+            if (!adjList.containsKey(i)) {
+                adjList.put(i, new LinkedList<Integer>());
+                orderedVertices.add(i);
+                maxVertexUpdator();
+                return i;
+            }
+        }
+        orderedVertices.add(adjList.size() + 1);
+        adjList.put(adjList.size() + 1, new LinkedList<Integer>());
+        maxVertexUpdator();
+        return maxVertex();
+    }
+
+    @Override
+    public int add(int u, int v) {
+        boolean present = false;
+        if (isDirected()) {
+            if (!adjList.get(u).contains(v)) {
+                adjList.get(u).add(v);
+            }
+            if (orderedPredKey.containsKey(v)) {
+                orderedPredKey.get(v).add(u);
+            } else {
+                orderedPredKey.put(v, new ArrayList<Integer>());
+                orderedPredKey.get(v).add(u);
+            }
+        } else {
+            if (!adjList.get(u).contains(v)) {
+                adjList.get(u).add(v);
+            }
+            if (!adjList.get(v).contains(u)) {
+                adjList.get(v).add(u);
+            }
+            int[] arrayNew = new int[2];
+            arrayNew[0] = u;
+            arrayNew[1] = v;
+            int[] arrayNewTwo = new int[2];
+            arrayNewTwo[0] = v;
+            arrayNewTwo[1] = u;
+            orderedUndEdges.add(arrayNew);
+            orderedUndEdges.add(arrayNewTwo);
+            if (orderedPredKey.containsKey(v)) {
+                orderedPredKey.get(v).add(u);
+            } else {
+                orderedPredKey.put(v, new ArrayList<Integer>());
+                orderedPredKey.get(v).add(u);
+            }
+            if (orderedPredKey.containsKey(u)) {
+                orderedPredKey.get(u).add(v);
+            } else {
+                orderedPredKey.put(u, new ArrayList<Integer>());
+                orderedPredKey.get(u).add(v);
+            }
+        }
+        return u;
+    }
+
+    @Override
+    public void remove(int v) {
+        orderedEdgesCopy = new ArrayList<int[]>();
+        if (adjList.containsKey(v)) {
+            adjList.remove(v);
+            orderedVertices.remove(orderedVertices.indexOf(v));
+            strongestVertex = 0;
+            maxVertexUpdator();
+            for (int num : adjList.keySet()) {
+                if (adjList.get(num).contains(v)) {
+                    adjList.get(num).remove(adjList.get(num).indexOf(v));
+                }
+            }
+            for (int[] array : orderedEdges) {
+                orderedEdgesCopy.add(array);
+            }
+            for (int[] copy : orderedEdgesCopy) {
+                if (copy[0] == v || copy[1] == v) {
+                    orderedEdges.remove(copy);
+                }
+            }
+            for (int num : orderedPredKey.keySet()) {
+                if (orderedPredKey.get(num).contains(v)) {
+                    orderedPredKey.get(num).remove(orderedPredKey.
+                        get(num).indexOf(v));
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the maximum vertex present in the graph.
+     */
+    public void maxVertexUpdator() {
+        for (Integer vertex : adjList.keySet()) {
+            if (vertex > strongestVertex) {
+                strongestVertex = vertex;
+            }
+        }
+    }
+
+    @Override
+    public void remove(int u, int v) {
+        boolean present = false;
+        if (adjList.containsKey(u)) {
+            if (isDirected()) {
+                if (adjList.get(u).contains(v)) {
+                    adjList.get(u).remove(adjList.get(u).indexOf(v));
+                    orderedPredKey.get(v).remove(orderedPredKey.get(v).
+                        indexOf(u));
+                    int[] dummyArray = new int[2];
+                    dummyArray[0] = u;
+                    dummyArray[1] = v;
+                    for (int[] array : orderedEdges) {
+                        if (Arrays.equals(dummyArray, array)) {
+                            present = true;
+                            if (present) {
+                                orderedEdges.remove(array);
+                            }
+                        }
+                    }
+                }
+            } else {
+                if (adjList.get(u).contains(v)) {
+                    adjList.get(u).remove(adjList.get(u).
+                        indexOf(v));
+                    adjList.get(v).remove(adjList.get(v).
+                        indexOf(u));
+                    orderedPredKey.get(v).remove(orderedPredKey.
+                        get(v).indexOf(u));
+                    orderedPredKey.get(u).remove(orderedPredKey.
+                        get(u).indexOf(v));
+                    int[] dummyArray = new int[2];
+                    dummyArray[0] = u;
+                    dummyArray[1] = v;
+                    int[] dummyArrayTwo = new int[2];
+                    dummyArray[0] = v;
+                    dummyArray[1] = u;
+                    for (int[] array : orderedEdges) {
+                        if (Arrays.equals(dummyArray, array)) {
+                            present = true;
+                            if (present) {
+                                orderedEdges.remove(array);
+                            }
+                        }
+                        if (Arrays.equals(dummyArrayTwo, array)) {
+                            present = true;
+                            if (present) {
+                                orderedEdges.remove(array);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** Supposed to get index of V.
+     *  @Return int. */
+    private Object getIndexOf(int v) {
+        return null;
+    }
+
+    @Override
+    public Iteration<Integer> vertices() {
+        Iterator<Integer> iters = adjList.keySet().iterator();
+        return Iteration.iteration(iters);
+    }
+
+    @Override
+    public int successor(int v, int k) {
+        if (!adjList.containsKey(v) || k > adjList.size() - 1) {
+            return 0;
+        }
+        if (adjList.get(v).size() == 0) {
+            return 0;
+        }
+        return adjList.get(v).get(k);
+    }
+
+    @Override
+    public abstract int predecessor(int v, int k);
+
+    @Override
+    public Iteration<Integer> successors(int v) {
+        if (adjList.get(v) == null) {
+            return Iteration.iteration(new LinkedList<Integer>());
+        }
+        return Iteration.iteration(adjList.get(v));
+    }
+
+    @Override
+    public abstract Iteration<Integer> predecessors(int v);
+
+    @Override
+    public Iteration<int[]> edges() {
+        ArrayList<int[]> existingEdges = new ArrayList<int[]>();
+        if (isDirected()) {
+            for (Integer i : adjList.keySet()) {
+                LinkedList<Integer> endPoints = adjList.get(i);
+                for (int j = 0; j < endPoints.size(); j++) {
+                    int[] dummyEdge = new int[]{i, endPoints.get(j)};
+                    existingEdges.add(dummyEdge);
+                }
+            }
+        } else {
+            for (Integer i : adjList.keySet()) {
+                LinkedList<Integer> tempList = adjList.get(i);
+                for (int k = 0; k < tempList.size(); k++) {
+                    int[] vertexDummy = new int[]{i, tempList.get(k)};
+                    boolean present = false;
+                    for (int[] edge : existingEdges) {
+                        if ((edge[0] == vertexDummy[1]
+                            && edge[1] == vertexDummy[0])
+                                || (edge[0] == vertexDummy[0]
+                                    && edge[1] == vertexDummy[1])) {
+                            present = true;
+                            break;
+                        }
+                    }
+                    if (!present) {
+                        existingEdges.add(vertexDummy);
+                    }
+                }
+            }
+        }
+        return Iteration.iteration(existingEdges);
+    }
+
+    @Override
+    protected boolean mine(int v) {
+        return adjList.containsKey(v);
+    }
+
+    @Override
+    protected void checkMyVertex(int v) {
+        if (!adjList.containsKey(v)) {
+            throw new IllegalArgumentException();
+        }
+    }
+
+    @Override
+    protected int edgeId(int u, int v) {
+        if (contains(u, v)) {
+            if (isDirected()) {
+                return ((u + v) * (u + v + 1)) / 2 + v;
+            } else {
+                if (u > v) {
+                    return ((v + u) * (v + u + 1)) / 2 + u;
+                } else {
+                    return ((u + v) * (u + v + 1)) / 2 + v;
+                }
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    /** The representation of a Graph using a HashMap. */
+    protected HashMap<Integer, LinkedList<Integer>> adjList;
+    /** Represents the maximum integer vertex. */
+    protected int strongestVertex;
+    /** This is used to maintain the order in which vertices
+     *  are added onto the graph. */
+    protected ArrayList<Integer> orderedVertices;
+    /** This maintains the order in which edges were added
+     *  onto the graph. */
+    protected ArrayList<int[]> orderedEdges;
+    /** Is a copy of orderedEdges, will be used within the remove method. */
+    protected ArrayList<int[]> orderedEdgesCopy;
+    /** This maintains the order in which edges were added onto
+     * the UNDIRECTED graph. */
+    protected ArrayList<int[]> orderedUndEdges;
+    /** Will contains all of the ID's assigned to the edges. */
+    protected HashMap<int[], Integer> edgesID;
+    /** Would contains all of predecessors in the order
+     * they were added. */
+    protected HashMap<Integer, ArrayList<Integer>> orderedPredKey;
+    /** ID counter, the first ID will start from 0. */
+    protected int newID;
+}

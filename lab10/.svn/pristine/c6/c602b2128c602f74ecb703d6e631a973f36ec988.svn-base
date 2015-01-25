@@ -1,0 +1,291 @@
+// This is a SUGGESTED skeleton for a class that represents a single
+// Table.  You can throw this away if you want, but it is a good
+// idea to try to understand it first.  Our solution changes or adds
+// about 100 lines in this skeleton.
+
+package  bugs.bug1.db61b;
+
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+
+import static bugs.bug1.db61b.Utils.*;
+
+/** A single table in a database.
+ *  @author P. N. Hilfinger
+ */
+class Table implements Iterable<Row> {
+
+    /** A new Table whose columns are given by COLUMNTITLES, which may
+     *  not contain dupliace names. */
+    Table(String[] columnTitles) {
+        for (int i = columnTitles.length - 1; i >= 1; i -= 1) {
+            for (int j = i - 1; j >= 0; j -= 1) {
+                if (columnTitles[i].equals(columnTitles[j])) {
+                    throw error("duplicate column name: %s",
+                                columnTitles[i]);
+                }
+            }
+        }
+        for (int k = 0; k < columnTitles.length; k++) {
+            _columns.add(columnTitles[k]);
+        }
+        this._nColumns = columnTitles.length;
+    }
+
+    /** A new Table whose columns are given by COLUMNTITLES. */
+    Table(List<String> columnTitles) {
+        this(columnTitles.toArray(new String[columnTitles.size()]));
+    }
+
+    /** Return the number of columns in this table. */
+    public int columns() {
+        return _nColumns;  // REPLACE WITH SOLUTION
+    }
+
+    /** Return the name of this table. */
+    public String getName() {
+        return _name;
+    }
+
+    /** Changes the name of this table to NAME. */
+    public void changeName(String name) {
+        _name = name;
+    }
+
+    /** Return the title of the Kth column.  Requires 0 <= K < columns(). */
+    public String getTitle(int k) {
+        return _columns.get(k);  // REPLACE WITH SOLUTION
+    }
+
+    /** Return the number of the columns whose title is TITLE, or -1 if
+     *  there isn't one. */
+    public int findColumn(String title) {
+        // Constructor of this class does not allow duplicate column names.
+        return _columns.indexOf(title);  // REPLACE WITH SOLUTION
+    }
+
+    /** Return the number of Rows in this table. */
+    public int size() {
+        return _rows.size();  // REPLACE WITH SOLUTION
+    }
+
+    /** Returns an iterator that returns my rows in an unspecfied order. */
+    @Override
+    public Iterator<Row> iterator() {
+        return _rows.iterator();
+    }
+
+    /** Add ROW to THIS if no equal row already exists.  Return true if anything
+     *  was added, false otherwise. */
+    public boolean add(Row row) {
+        if (row.size() != columns()) {
+            throw error("Row size does not correspond");
+        }
+        return _rows.add(row);   // REPLACE WITH SOLUTION
+    }
+
+    /** Read the contents of the file NAME.db, and return as a Table.
+     *  Format errors in the .db file cause a DBException. */
+    static Table readTable(String name) {
+        BufferedReader input;
+        Table table;
+        input = null;
+        table = null;
+        try {
+            input = new BufferedReader(new FileReader(name + ".db"));
+            String header = input.readLine();
+            if (header == null) {
+                throw error("missing header in DB file");
+            }
+            String[] columnNames = header.split(",");
+            // FILL IN
+            table = new Table(columnNames);
+            while (true) {
+                String nextLine = input.readLine();
+                if (nextLine == null) {
+                    break;
+                }
+                String[] rowItems = nextLine.split(",");
+                Row nextRow = new Row(rowItems);
+                table.add(nextRow);
+            }
+        } catch (FileNotFoundException e) {
+            throw error("could not find %s.db", name);
+        } catch (IOException e) {
+            throw error("problem reading from %s.db", name);
+        } finally {
+            if (input != null) {
+                try {
+                    input.close();
+                } catch (IOException e) {
+                    /* Ignore IOException */
+                }
+            }
+        }
+        return table;
+    }
+
+    /** Write the contents of TABLE into the file NAME.db. Any I/O errors
+     *  cause a DBException. */
+    void writeTable(String name) {
+        PrintStream output;
+        output = null;
+        try {
+            String sep;
+            sep = ",";
+            output = new PrintStream(name + ".db");
+            // FILL THIS IN
+            for (int i = 0; i < columns(); i++) {
+                if (i == columns() - 1) {
+                    output.print(this._columns.get(i));
+                } else {
+                    output.print(this._columns.get(i) + sep);
+                }
+            }
+            output.println("");
+            for (Row currRow : _rows) {
+                for (int k = 0; k < columns(); k++) {
+                    if (k == columns() - 1) {
+                        output.print(currRow.get(k));
+                    } else {
+                        output.print(currRow.get(k) + sep);
+                    }
+                }
+                output.println("");
+            }
+        } catch (IOException e) {
+            throw error("trouble writing to %s.db", name);
+        } finally {
+            if (output != null) {
+                output.close();
+            }
+        }
+    }
+
+    /** Print my contents on the standard output, with each line indented
+     *  by 2 spaces and each column separated by 1 space. */
+    void print() {
+        for (Row currRow : _rows) {
+            System.out.printf("  %s", currRow.get(0));
+            for (int j = 1; j < columns(); j++) {
+                System.out.printf(" %s", currRow.get(j));
+            }
+            System.out.println("");
+        }
+    }
+
+    /** Return a new Table whose columns are COLUMNNAMES, selected from
+     *  rows of this table with no given conditions. */
+    Table select(List<String> columnNames) {
+        ArrayList<Column> cols = new ArrayList<>();
+        for (String col : columnNames) {
+            cols.add(new Column(col, this));
+        }
+        Table result = new Table(columnNames);
+
+        // WRITE TESTS FOR THIS SHIT
+        //11 lines - 1 table case
+        ArrayList<Integer> indices = new ArrayList<>();
+        // assign index to each column in columnNames:
+        int i = 0;
+        for (String col : _columns) {
+            for (String colN : columnNames) {
+                if (col.equals(colN)) {
+                    indices.add(i);
+                }
+            }
+            i += 1; // tracks the index of _columns that columnNames specifies
+        }
+        ArrayList<Row> rows = new ArrayList<>();
+        for (Row row : _rows) {
+            Row toBeAdded;
+            ArrayList<String> items = new ArrayList<>();
+            for (Integer j : indices) {
+                items.add(row.get(j)); // items means rowItems
+            }
+            toBeAdded = new Row(items.toArray(new String[items.size()]));
+            rows.add(toBeAdded);
+        }
+        for (Row row : rows) {
+            result.add(row);
+        }
+        return result;
+    }
+
+    /** Return a new Table whose columns are COLUMNNAMES, selected from
+     *  rows of this table that satisfy CONDITIONS. */
+    Table select(List<String> columnNames, List<Condition> conditions) {
+        ArrayList<Column> cols = new ArrayList<>();
+        for (String col : columnNames) {
+            cols.add(new Column(col, this));
+        }
+        Table result = new Table(columnNames);
+        if (conditions == null) {
+            for (Row row : _rows) {
+                Row toBeAdded = new Row(cols, row);
+                result.add(toBeAdded);
+            }
+        } else {
+            for (Row row : _rows) {
+                if (Condition.test(conditions, row)) {
+                    result.add(row);
+                }
+                /*
+                Row toBeAdded;
+                boolean pass = true;
+                for (Condition cond : conditions) {
+                    if (!cond.test(row)) {
+                        pass = false;
+                        break;
+                    }
+                }
+                if (pass == true) {
+                    toBeAdded = new Row(cols, row);
+                    result.add(toBeAdded);
+                }*/
+            }
+        }
+        return result;
+    }
+
+    /** Return a new Table whose columns are COLUMNNAMES, selected
+     *  from pairs of rows from this table and from TABLE2 that match
+     *  on all columns with identical names and satisfy CONDITIONS. */
+    Table select(Table table2, List<String> columnNames,
+                 List<Condition> conditions) {
+        return false;
+    }
+
+    /** Return true if the columns COMMON1 from ROW1 and COMMON2 from
+     *  ROW2 all have identical values.  Assumes that COMMON1 and
+     *  COMMON2 have the same number of elements and the same names,
+     *  that the columns in COMMON1 apply to this table, those in
+     *  COMMON2 to another, and that ROW1 and ROW2 come, respectively,
+     *  from those tables. */
+    public static boolean equijoin(List<Column> common1, List<Column> common2,
+                                    Row row1, Row row2) {
+
+        return false;
+    }
+
+    /** My rows. */
+    private HashSet<Row> _rows = new HashSet<>();
+
+    /** My columns. */
+    private ArrayList<String> _columns = new ArrayList<>();
+
+    /** The number of columns in the table. */
+    private int _nColumns;
+
+    /** My name. */
+    private String _name;
+
+}
